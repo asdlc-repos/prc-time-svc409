@@ -1,0 +1,25 @@
+{
+  "overview": "A single lightweight backend service exposing a simple REST API on port 8080 that returns the current UTC timestamp in RFC3339 format. The service is stateless, requires no external dependencies, and handles GET requests to /time with JSON responses.",
+  "requirements": [
+    "The service must expose an HTTP endpoint at GET /time that returns the current UTC timestamp",
+    "The timestamp must be returned in RFC3339 format for easy parsing",
+    "The service must listen on port 8080",
+    "The service must return responses in JSON format",
+    "The service must include a /health endpoint for health checks",
+    "The service must be stateless and require no external storage or dependencies"
+  ],
+  "components": [
+    {
+      "name": "time-service",
+      "componentType": "service",
+      "language": "Go",
+      "dependsOn": [],
+      "entrypoint": "deployment/service",
+      "buildpack": "docker",
+      "appPath": "/time-service",
+      "openAPISpec": "openapi: 3.0.3\ninfo:\n  title: Time Service API\n  description: A lightweight service that returns the current UTC time in RFC3339 format\n  version: 1.0.0\nservers:\n  - url: http://localhost:8080\n    description: Local development server\npaths:\n  /time:\n    get:\n      summary: Get current UTC time\n      description: Returns the current UTC timestamp in RFC3339 format\n      operationId: getCurrentTime\n      responses:\n        '200':\n          description: Successfully retrieved current time\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  time:\n                    type: string\n                    format: date-time\n                    description: Current UTC time in RFC3339 format\n                    example: '2024-01-15T14:30:45Z'\n                required:\n                  - time\n        '500':\n          description: Internal server error\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  error:\n                    type: string\n                    description: Error message\n                    example: 'Internal server error'\n  /health:\n    get:\n      summary: Health check endpoint\n      description: Returns the health status of the service\n      operationId: healthCheck\n      responses:\n        '200':\n          description: Service is healthy\n          content:\n            application/json:\n              schema:\n                type: object\n                properties:\n                  status:\n                    type: string\n                    example: 'ok'\n                required:\n                  - status",
+      "componentAgentInstructions": "Implement a Go service using net/http that listens on port 8080. Create two HTTP handlers: 1) GET /time - return current UTC time using time.Now().UTC().Format(time.RFC3339) wrapped in a JSON object with key 'time'. 2) GET /health - return JSON object with status 'ok'. Use encoding/json for JSON marshaling. Set Content-Type header to 'application/json' for all responses. Handle errors gracefully and return 500 status with error JSON on failures. Use http.ListenAndServe on :8080. Structure: main.go with timeHandler and healthHandler functions. No external dependencies beyond standard library. Dockerfile should use golang:1.21-alpine as builder, compile the binary, then use alpine:latest as runtime. Expose port 8080. No configuration files needed. The service is stateless with no database or cache requirements."
+    }
+  ],
+  "sourceSpec": "spec-v1"
+}
